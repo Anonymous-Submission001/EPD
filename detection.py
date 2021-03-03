@@ -2,6 +2,7 @@ from collections import defaultdict
 
 import nltk
 import numpy as np
+import os
 import random
 import string
 import torch
@@ -176,6 +177,8 @@ def multi_MLM(sgs, drug_formal, top_words, dataset, rank_model):
                     line = line.replace(j, '_'.join(j.split()))
                 new_text.append(line.strip())
 
+        if not os.path.isdir('./data/embeddings'):
+            os.mkdir('./data/embeddings') 
         embed_file = './data/embeddings/embeddings_' + dataset + '.txt'
         new_text_file = './data/embeddings/new_' + dataset + '.txt'
         word2vec_model = train_word2vec_embed(new_text, new_text_file, embed_file)
@@ -191,6 +194,9 @@ def multi_MLM(sgs, drug_formal, top_words, dataset, rank_model):
         out = [' '.join(x[0].split('_')) for x in word2vec_model.wv.similar_by_vector(target_vector_ave, topn=len(emb_dict.vocab)) if '_' in x[0] and not any(y in drug_formal for y in x[0].split('_'))]
         return out, []
 
+
+    if not os.path.isdir('./data/phrase'):
+        os.mkdir('./data/phrase') 
     phrase_cand = read_phrase_candidates('./data/phrase/AutoPhrase_' + dataset + '.txt', 0.7)
     phrase_cand = filter_phrase(phrase_cand, top_words)
     if rank_model in ['epd', 'word2vec']:
